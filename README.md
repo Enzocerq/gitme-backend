@@ -35,6 +35,7 @@ br.com.tcc.github_poc
 │   ├── AuthController       # Troca de code OAuth por token GitHub
 │   ├── GithubController     # Endpoints proxy para a GitHub API (repos, commits, PRs, etc.)
 │   ├── DemoController       # Endpoints de demonstração (repos pré-carregados + top contributor)
+│   ├── HealthController     # Health check endpoint para monitoramento
 │   └── ProductivityScoreController
 ├── etl/                 # Motor de seeding assíncrono
 │   ├── SeedController
@@ -69,16 +70,18 @@ br.com.tcc.github_poc
 Criar `.env` na raiz do projeto:
 
 ```properties
-DB_URL=jdbc:postgresql://<host>:5432/postgres
-DB_USERNAME=postgres
+DB_URL=jdbc:postgresql://<session-pooler-host>:5432/postgres
+DB_USERNAME=postgres.<project-ref>
 DB_PASSWORD=<password>
 GITHUB_CLIENT_ID=your_github_oauth_client_id
 GITHUB_CLIENT_SECRET=your_github_oauth_client_secret
 ```
 
+> **Supabase:** use a URL do **Session pooler** (não a conexão direta), pois ambientes cloud como Render usam IPv4. A URL do session pooler e o username correto (`postgres.<project-ref>`) estão disponíveis em Dashboard → Connect → Connection string → JDBC → Session pooler.
+
 > O banco atualmente configurado já possui os dados de `axios/axios` e `vuejs/core` pré-carregados, habilitando o modo demonstração sem necessidade de ETL.
 
-> `GITHUB_CLIENT_ID` e `GITHUB_CLIENT_SECRET` são obrigatórios para o fluxo OAuth do frontend. Crie um OAuth App em https://github.com/settings/developers com callback `http://localhost:8080/auth-callback`.
+> `GITHUB_CLIENT_ID` e `GITHUB_CLIENT_SECRET` são obrigatórios para o fluxo OAuth do frontend. Crie um OAuth App em https://github.com/settings/developers com callback `http://localhost:8080/auth-callback` (desenvolvimento) ou `https://gitme.enzocerq.workers.dev/auth-callback` (produção).
 
 ### 3. Rodar a Aplicação
 
@@ -173,6 +176,12 @@ curl "http://localhost:8081/api/poc/demo/top-contributor?repoIds=23088740"
 |---|---|---|
 | `POST /api/auth/github` | `POST` | Troca o `code` OAuth pelo token de acesso GitHub e retorna o perfil do usuário |
 
+### ❤️ Health Check
+
+| Endpoint | Método | Descrição |
+|---|---|---|
+| `GET /health` | `GET` | Retorna `{"status":"UP"}` — usado pelo Render e UptimeRobot para monitoramento |
+
 ## Banco de Dados
 
 O banco Supabase/PostgreSQL contém os dados de `axios/axios` e `vuejs/core` já populados via ETL. As tabelas principais são:
@@ -241,6 +250,38 @@ scoreFinal = (entrega × 0.35) + (eficiência × 0.25) + (qualidade × 0.20) + (
   "consistencia": 60.00
 }
 ```
+
+## Deploy
+
+O backend está hospedado no **Render** via Docker.
+
+**URL de produção:** `https://gitme-backend.onrender.com`
+
+**Repositório:** `https://github.com/Enzocerq/gitme-backend`
+
+### Render (produção)
+
+O deploy é feito automaticamente via Docker a cada push na branch `main`. Configuração:
+
+| Campo | Valor |
+|---|---|
+| **Language** | Docker |
+| **Health Check Path** | `/health` |
+| **Instance Type** | Free |
+
+**Variáveis de ambiente no Render:**
+
+| Variável | Descrição |
+|---|---|
+| `DB_URL` | URL JDBC do Session pooler do Supabase |
+| `DB_USERNAME` | `postgres.<project-ref>` |
+| `DB_PASSWORD` | Senha do banco |
+| `GITHUB_CLIENT_ID` | Client ID do OAuth App |
+| `GITHUB_CLIENT_SECRET` | Client Secret do OAuth App |
+
+> O free tier do Render entra em sleep após inatividade. Use o [UptimeRobot](https://uptimerobot.com) com monitor HTTP para `https://gitme-backend.onrender.com/health` em intervalo de 5 minutos para manter o serviço ativo.
+
+---
 
 ## Decisões Arquiteturais
 
