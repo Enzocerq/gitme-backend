@@ -1,4 +1,4 @@
-# TCC Dashboard — GitHub Metrics API
+# GTIME - BACKEND
 
 Dashboard stateful de métricas de produtividade individual e de equipe baseado em dados do GitHub, com persistência em Supabase/PostgreSQL e documentação interativa via OpenAPI/Swagger.
 
