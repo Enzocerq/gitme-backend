@@ -106,7 +106,7 @@ Todos requerem `authorLogin` e opcionalmente `from` / `to` (ISO-8601 dates).
 | Endpoint | Descrição |
 |---|---|
 | `GET /overview` | Volume de commits/PRs, taxa de aceitação e série diária |
-| `GET /flow` | Cycle Time, Lead Time, TCM, Time in Review, dias ativos; `recentActivity` inclui `additions` e `deletions` por commit |
+| `GET /flow` | Cycle Time, Lead Time, TCM, Time in Review, dias ativos; `recentActivity` inclui `additions` e `deletions` nos itens de tipo `commit` (campos são `null` para PRs) |
 | `GET /repos` | Participação relativa por repositório |
 | `GET /collaboration` | Distribuição de revisões, comparativo individual vs equipe |
 | `GET /insights` | Classificação Conventional Commits + mapa de produtividade (grid 7×24) |
@@ -176,6 +176,22 @@ curl "http://localhost:8081/api/poc/demo/top-contributor?repoIds=23088740"
 |---|---|---|
 | `POST /api/auth/github` | `POST` | Troca o `code` OAuth pelo token de acesso GitHub e retorna o perfil do usuário |
 
+### 🐙 Endpoints GitHub (Proxy)
+
+**Base:** `/api/poc/github`
+
+Proxy para a GitHub API. Requerem header `Authorization: Bearer <token>`. Usados pelo frontend durante a seleção de repositórios (fluxo real, não demo).
+
+| Endpoint | Método | Descrição |
+|---|---|---|
+| `/repositorios` | `GET` | Lista repositórios do usuário autenticado |
+| `/{owner}/{repo}/commits` | `GET` | Commits do repositório |
+| `/{owner}/{repo}/contribuidores` | `GET` | Contribuidores do repositório |
+| `/{owner}/{repo}/prs` | `GET` | Pull requests do repositório |
+| `/{owner}/{repo}/issues` | `GET` | Issues do repositório |
+| `/{owner}/{repo}/prs/{pullNumber}/reviews` | `GET` | Reviews de um PR específico |
+| `/{owner}/{repo}/commits/stats` | `GET` | Estatísticas de commits do repositório |
+
 ### ❤️ Health Check
 
 | Endpoint | Método | Descrição |
@@ -212,9 +228,9 @@ O banco Supabase/PostgreSQL contém os dados de `axios/axios` e `vuejs/core` já
 
 ### Score de Produtividade Individual
 
-**Endpoint:** `GET /api/productivity-score/{authorLogin}?from=YYYY-MM-DD&to=YYYY-MM-DD`
+**Endpoint:** `GET /api/productivity-score/{authorLogin}?startDate=YYYY-MM-DDTHH:mm:ss&endDate=YYYY-MM-DDTHH:mm:ss`
 
-Calcula um score de 0 a 100 para um contributor (identificado pelo GitHub login) com base em 5 componentes ponderados. O período padrão são os últimos 30 dias.
+Calcula um score de 0 a 100 para um contributor (identificado pelo GitHub login) com base em 5 componentes ponderados. O período padrão são os últimos 30 dias. Os parâmetros `startDate` e `endDate` são opcionais e devem estar no formato ISO-8601 com hora (`LocalDateTime`).
 
 #### Fórmula Final
 
