@@ -106,7 +106,7 @@ Todos requerem `authorLogin` e opcionalmente `from` / `to` (ISO-8601 dates).
 | Endpoint | Descrição |
 |---|---|
 | `GET /overview` | Volume de commits/PRs, taxa de aceitação e série diária |
-| `GET /flow` | Cycle Time, Lead Time, TCM, Time in Review, dias ativos |
+| `GET /flow` | Cycle Time, Lead Time, TCM, Time in Review, dias ativos; `recentActivity` inclui `additions` e `deletions` por commit |
 | `GET /repos` | Participação relativa por repositório |
 | `GET /collaboration` | Distribuição de revisões, comparativo individual vs equipe |
 | `GET /insights` | Classificação Conventional Commits + mapa de produtividade (grid 7×24) |
@@ -212,9 +212,9 @@ O banco Supabase/PostgreSQL contém os dados de `axios/axios` e `vuejs/core` já
 
 ### Score de Produtividade Individual
 
-**Endpoint:** `GET /api/productivity-score/{userId}?from=YYYY-MM-DD&to=YYYY-MM-DD`
+**Endpoint:** `GET /api/productivity-score/{authorLogin}?from=YYYY-MM-DD&to=YYYY-MM-DD`
 
-Calcula um score de 0 a 100 para um usuário com base em 5 componentes ponderados. O período padrão são os últimos 30 dias.
+Calcula um score de 0 a 100 para um contributor (identificado pelo GitHub login) com base em 5 componentes ponderados. O período padrão são os últimos 30 dias.
 
 #### Fórmula Final
 
