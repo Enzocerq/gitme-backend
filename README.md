@@ -267,6 +267,26 @@ scoreFinal = (entrega × 0.35) + (eficiência × 0.25) + (qualidade × 0.20) + (
 }
 ```
 
+#### Série temporal (tendência)
+
+**Endpoint:** `GET /api/productivity-score/{authorLogin}/trend?startDate=...&endDate=...&points=N`
+
+Retorna a evolução do score ao longo do período — útil porque a **tendência é mais informativa que o valor absoluto isolado**. Cada ponto é calculado sobre uma **janela móvel de 30 dias** encerrada na data do ponto (o mesmo tamanho em que as metas mensais são calibradas, mantendo os pontos comparáveis entre si, à semelhança de uma média móvel). Reaproveita a mesma projeção SQL e o mesmo serviço de cálculo do endpoint individual.
+
+| Parâmetro | Descrição |
+|---|---|
+| `startDate` / `endDate` | ISO-8601 com hora; opcionais (padrão: últimos 30 dias) |
+| `points` | Número de pontos uniformemente espaçados no intervalo. Limitado a 2–30 (padrão **12**) |
+
+**Exemplo de resposta:**
+```json
+[
+  { "date": "2026-05-13", "score": 68.20 },
+  { "date": "2026-05-20", "score": 70.10 },
+  { "date": "2026-05-27", "score": 72.50 }
+]
+```
+
 ## Deploy
 
 O backend está hospedado no **Render** via Docker.
