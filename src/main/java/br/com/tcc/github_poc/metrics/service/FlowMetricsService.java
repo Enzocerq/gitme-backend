@@ -96,7 +96,7 @@ public class FlowMetricsService {
                 .forEach(p -> items.add(prItem(p)));
 
         items.sort((a, b) -> b.date().compareTo(a.date()));
-        return items.size() > 10 ? items.subList(0, 10) : items;
+        return items;
     }
 
     private RecentActivityItem commitItem(Commit c) {
