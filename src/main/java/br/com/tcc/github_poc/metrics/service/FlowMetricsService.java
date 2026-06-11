@@ -89,10 +89,10 @@ public class FlowMetricsService {
     private List<RecentActivityItem> buildRecent(Long repoId, String authorLogin) {
         List<RecentActivityItem> items = new ArrayList<>();
 
-        commitRepo.findRecentByRepoAndAuthor(repoId, authorLogin, PageRequest.of(0, 5))
+        commitRepo.findRecentByRepoAndAuthor(repoId, authorLogin, PageRequest.of(0, 10))
                 .forEach(c -> items.add(commitItem(c)));
 
-        prRepo.findRecentByRepoAndAuthor(repoId, authorLogin, PageRequest.of(0, 5))
+        prRepo.findRecentByRepoAndAuthor(repoId, authorLogin, PageRequest.of(0, 10))
                 .forEach(p -> items.add(prItem(p)));
 
         items.sort((a, b) -> b.date().compareTo(a.date()));
